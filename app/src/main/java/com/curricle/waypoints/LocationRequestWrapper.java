@@ -12,14 +12,14 @@ import com.google.android.gms.location.LocationServices;
 /**
  * Created by conrad on 15/01/15.
  */
-public class LocationWrapper {
+public class LocationRequestWrapper {
 
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private LocationListener mLocationListener;
     private boolean mIsUpdatingLocation;
 
-    public LocationWrapper(LocationListener locationListener, Context context) {
+    public LocationRequestWrapper(LocationListener locationListener, Context context) {
         mLocationListener = locationListener;
 
         // Create API Client (Ugly anonymous inner classes, but hides interface implementation)

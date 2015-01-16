@@ -12,7 +12,7 @@ public class NewWaypoint extends ActionBarActivity implements LocationListener {
 
     private TextView mLocText;
     private Location mMostAccurateLocation;
-    private LocationWrapper mLocationWrapper;
+    private LocationRequestWrapper mLocationWrapper;
 
     @Override
     protected void onResume() {
@@ -25,7 +25,7 @@ public class NewWaypoint extends ActionBarActivity implements LocationListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_waypoint);
-        mLocationWrapper = new LocationWrapper(this, this);
+        mLocationWrapper = new LocationRequestWrapper(this, this);
         mLocText = (TextView) findViewById(R.id.position_label);
     }
 

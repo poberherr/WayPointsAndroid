@@ -3,20 +3,46 @@ package com.curricle.waypoints;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.curricle.waypoints.data.DBHelper;
+import com.curricle.waypoints.data.WayPoint;
 import com.melnykov.fab.FloatingActionButton;
+
+import java.util.List;
 
 public class Home extends ActionBarActivity {
 
+    DBHelper dbHelper;
     private FloatingActionButton fab;
+
+    public void actionButton1(View button) {
+        List<WayPoint> res = dbHelper.getAll();
+        for (WayPoint wp : res) {
+            Log.d("WPR", wp.toString());
+        }
+    }
+
+    public void actionButton2(View button) {
+        dbHelper.addWayPoint(new WayPoint(0, 5.12, -112.12, 1421427315, 3, "Conrad war hier!", false));
+    }
+
+    public void actionButton3(View button) {
+        WayPoint wp = dbHelper.getAll().getFirst();
+        wp.message += "UPDATE!!";
+        wp.transmitted = true;
+        dbHelper.updateWayPoint(wp);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        dbHelper = new DBHelper(this);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -25,6 +51,14 @@ public class Home extends ActionBarActivity {
                 // Show new activity
                 Intent intent = new Intent(Home.this, NewWaypoint.class);
                 startActivity(intent);
+
+               /*
+                Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+                smsIntent.setType("vnd.android-dir/mms-sms");
+                smsIntent.putExtra("address", "12125551212");
+                smsIntent.putExtra("sms_body","Body of Message");
+                startActivity(smsIntent);
+                */
             }
         });
     }
