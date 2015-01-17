@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  * Created by conrad on 16/01/15.
@@ -15,13 +15,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // Database Version
     private static final int DATABASE_VERSION = 1;
+
     // Database Name
     private static final String DATABASE_NAME = "WayPointDB";
 
-    // Books table name
+    //Table name
     private static final String TABLE_WAYPOINTS = "waypoints";
 
-    // Books Table Columns names
+    //Columns names
     private static final String KEY_ID = "id";
     private static final String KEY_LAT = "latitude";
     private static final String KEY_LONG = "longitude";
@@ -32,8 +33,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String[] COLUMNS = {KEY_ID, KEY_LAT, KEY_LONG, KEY_TIMESTAMP, KEY_TYPE, KEY_MESSAGE, KEY_TRANSMITTED};
 
+
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        SQLiteDatabase db = this.getReadableDatabase();
+        db.close();
     }
 
     @Override
@@ -50,6 +54,34 @@ public class DBHelper extends SQLiteOpenHelper {
 
         // create books table
         db.execSQL(CREATE_TABLE);
+
+        // DEBUG - DUMMY VALUES
+        ContentValues values = createContentValues(new WayPoint(0, 5.12, -112.12, 1421427315, 3, "Conrad war hier!", false));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, 15.32, -22.12, 1421427500123L, 2, "Noch ein Text", false));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, -22.4, 92.12, 1422427600555L, 0, "Super hier waren wir campen Super hier waren wir campen Super hier waren wir campen Super hier waren wir campen Super hier waren wir campen", false));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, 5.12, -112.12, 1421427315000L, 3, "Conrad war hier!", true));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, 15.32, -22.12, 1421327500000L, 2, "Text", true));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, 77.4, 171.12, 1421427600555L, 0, "Message", false));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, 5.12, -112.12, 1421427415111L, 3, "ASDF!", true));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, 15.32, -22.12, 1421427770222L, 2, "Noch ein Text", true));
+        db.insert(TABLE_WAYPOINTS, null, values);
+
+        values = createContentValues(new WayPoint(0, 77.4, 171.12, 1421427650123L, 0, "Grenzübergang", true));
+        db.insert(TABLE_WAYPOINTS, null, values);
     }
 
     @Override
@@ -58,53 +90,25 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public void addWayPoint(WayPoint wayPoint) {
-        // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
-
-        // 2. create ContentValues to add key "column"/value
         ContentValues values = createContentValues(wayPoint);
-        // 3. insert
-        db.insert(TABLE_WAYPOINTS, // table
-                null, //nullColumnHack
-                values); // key/value -> keys = column names/ values = column values
-
-        // 4. close
+        db.insert(TABLE_WAYPOINTS, null, values);
         db.close();
     }
 
     public int updateWayPoint(WayPoint wayPoint) {
-
-        // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
-
-        // 2. create ContentValues to add key "column"/value
         ContentValues values = createContentValues(wayPoint);
-
-        // 3. updating row
-        int i = db.update(TABLE_WAYPOINTS, //table
-                values, // column/value
-                KEY_ID + " = ?", // selections
-                new String[]{String.valueOf(wayPoint.identifier)}); //selection args
-
-        // 4. close
+        int i = db.update(TABLE_WAYPOINTS, values, KEY_ID + " = ?", new String[]{String.valueOf(wayPoint.identifier)});
         db.close();
 
         return i;
     }
 
     public void deleteWayPoint(WayPoint wayPoint) {
-        // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
-
-        // 2. delete
-        db.delete(TABLE_WAYPOINTS, //table name
-                KEY_ID + " = ?",  // selections
-                new String[]{String.valueOf(wayPoint.identifier)}); //selections args
-
-        // 3. close
+        db.delete(TABLE_WAYPOINTS, KEY_ID + " = ?", new String[]{String.valueOf(wayPoint.identifier)});
         db.close();
-
-        //log
     }
 
     private ContentValues createContentValues(WayPoint wayPoint) {
@@ -118,14 +122,9 @@ public class DBHelper extends SQLiteOpenHelper {
         return values;
     }
 
-    public LinkedList<WayPoint> getAll() {
-
-        LinkedList<WayPoint> result = new LinkedList<WayPoint>();
-
-        // 1. get reference to readable DB
+    public ArrayList<WayPoint> getAll() {
+        ArrayList<WayPoint> result = new ArrayList<WayPoint>();
         SQLiteDatabase db = this.getReadableDatabase();
-
-        // 2. build query
         Cursor cursor =
                 db.query(TABLE_WAYPOINTS, // a. table
                         COLUMNS, // b. column names
@@ -133,28 +132,27 @@ public class DBHelper extends SQLiteOpenHelper {
                         null, // d. selections args
                         null, // e. group by
                         null, // f. having
-                        null, // g. order by
+                        KEY_TIMESTAMP + " DESC", // g. order by
                         null); // h. limit
 
         if (cursor != null) {
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()) {
-                WayPoint wp = new WayPoint(
-                        cursor.getInt(0),
-                        cursor.getDouble(1),
-                        cursor.getDouble(2),
-                        cursor.getLong(3),
-                        cursor.getInt(4),
-                        cursor.getString(5),
-                        cursor.getInt(6) != 0);
-                cursor.moveToNext();
-                result.add(wp);
+            if (cursor.moveToFirst()) {
+                do {
+                    WayPoint wp = new WayPoint(
+                            cursor.getInt(0),
+                            cursor.getDouble(1),
+                            cursor.getDouble(2),
+                            cursor.getLong(3),
+                            cursor.getInt(4),
+                            cursor.getString(5),
+                            cursor.getInt(6) != 0);
+                    result.add(wp);
+                } while (cursor.moveToNext());
             }
         }
-
         db.close();
-        return result;
 
+        return result;
     }
 
 }
